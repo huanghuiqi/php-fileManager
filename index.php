@@ -15,6 +15,60 @@ if($act == '创建文件'){
 //    echo $filename;
     $mes = createFile($path.'/'.$filename);
     alertMes($mes,$redirect);
+}elseif($act == 'showContent'){
+    //查看文件内容
+    $content = file_get_contents($filename);
+    //echo $content;
+    if(strlen($content)){
+        echo "<textarea readonly='readonly' cols='100' rows='10'>{$content}</textarea>";
+    }else{
+        alertMes("文件没有内容，请编辑后查看",$redirect);
+    }
+    //高亮显示php代码
+    //highlight_string($content);
+}elseif($act == 'editContent'){
+    //echo "编辑文件";
+    $content = file_get_contents($filename);
+    $str = <<<EOF
+    <form action='index.php?act=doEdit' method='post'>
+       <textarea name='content' cols='190' rows='10'>{$content}</textarea></br>
+       <input type='hidden' name='filename' value='{$filename}'/>
+        <input type="submit" value="修改文件内容"/>
+    </form>
+EOF;
+    echo $str;
+}elseif($act == 'doEdit'){
+    //修改文件内容的操作
+    $content = $_REQUEST['content'];
+   // echo $filename;
+    if(file_put_contents($filename,$content)){
+        $mes = "文件修改成功";
+    }else{
+        $mes = "文件修改失败";
+    }
+    alertMes($mes,$redirect);
+}elseif($act == 'renameFile'){
+    //重命名文件
+    $str = <<<EOF
+        <form action="index.php?act=doRename" method="post">
+            请填写重命名:<input type="text" name="newname" placeholder="重命名"/></br>
+            <input type="hidden" name="filename" value="{$filename}"/>
+            <input type="submit" value="重命名"/>
+        </form>
+EOF;
+    echo $str;
+}elseif($act == 'doRename'){
+    //实现重命名的操作
+    $newname = @$_REQUEST['newname'];
+    $mes = renameFile($filename,$newname);
+    alertMes($mes,$redirect);
+}elseif($act == 'delFile'){
+    //实现删除文件操作
+    $mes = delFile($filename);
+    alertMes($mes,$redirect);
+}elseif($act == 'downFile'){
+    //下载文件
+    downFile($filename);
 }
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -176,7 +230,22 @@ if($act == '创建文件'){
         <td><?php echo date('y-m-d H:i:s',fileatime($p))?></td>
         <!--操作-->
         <td>
+            <?php
+                //先得到文件的扩展名 通过切割判断是不是jpg等图片文件的后缀
+                //strtolower：转换为小写 end(explode(".",$val))：取得文件名根据符号"."分割后的最后那一部分，即扩展名
+                $strExt = explode(".",$val);
+                $ext = strtolower(end($strExt));
+                $imageExt = array("gif","jpg","jpeg","png");
+                //如果是图片的话查看方式通过jq-ui打开而不是二进制文字
+                if(in_array($ext,$imageExt)) {
+            ?>
+                 <a href="javascript:void(0)" onclick="showDetail('<?php echo $val;?>','<?php echo $p;?>')"><img class="small" src="images/show.png"  alt="" title="查看"/></a>|
+            <?php
+                }else{
+                //用二进制文本打开普通的文件
+            ?>
             <a href="index.php?act=showContent&path=<?php echo $path;?>&filename=<?php echo $p;?>" ><img class="small" src="images/show.png"  alt="" title="查看"/></a>|
+            <?php }; ?>
         <a href="index.php?act=editContent&path=<?php echo $path;?>&filename=<?php echo $p;?>"><img class="small" src="images/edit.png"  alt="" title="修改"/></a>|
         <a href="index.php?act=renameFile&path=<?php echo $path;?>&filename=<?php echo $p;?>"><img class="small" src="images/rename.png"  alt="" title="重命名"/></a>|
         <a href="index.php?act=copyFile&path=<?php echo $path;?>&filename=<?php echo $p;?>"><img class="small" src="images/copy.png"  alt="" title="复制"/></a>|
