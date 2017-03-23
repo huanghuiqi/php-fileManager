@@ -34,6 +34,57 @@ function createFile($filename){
     }
 }
 
+//重命名文件
+function renameFile($oldname,$newname){
+    //echo $oldname.'--'.$newname;
+    //第一步 验证是否是合法文件名
+    if (checkFileName($newname)){
+        //第二步 是否存在同名文件
+        $path = dirname($oldname);
+        if(!file_exists($path.'/'.$newname)){
+            if(rename($oldname,$path.'/'.$newname)){
+                return "重命名成功";
+            }else{
+                return "重命名失败";
+            }
+        }else{
+            return "存在同名文件，请重新命名";
+        }
+    }else{
+        return "非法文件名";
+    }
+}
+
+//检测重命名文件的名字是否合法
+function checkFileName($filename){
+    $pattern = "/[\/,\*,<>,\?,\|]/";
+    if(preg_match($pattern,$filename)){
+        return false;
+    }else{
+        return true;
+    }
+}
+
+//删除文件
+function delFile($filename){
+    if(unlink($filename)){
+        return "文件删除成功";
+    }else{
+        return "文件删除失败";
+    }
+}
+
+//下载文件
+function downFile($filename){
+    //要下载的文件名 可以写死
+    header('Content-Disposition:attachment;filename='.basename($filename));
+    //文件大小
+    header('Content-Length:'.filesize($filename));
+    ob_clean();//清空（擦掉）输出缓冲区
+    flush();//刷新输出缓冲
+    //文件路径
+    readfile($filename);
+}
 ?>
 
 
