@@ -1,7 +1,7 @@
 # php-fileManager
 web在线文件管理系统
 
-###文件操作    
+### 文件操作    
 
 ```file_get_contents($filename)```  查看文件内容    
 
@@ -40,4 +40,4 @@ web在线文件管理系统
     //文件路径
     readfile($filename);
 ```
-###文件夹操作
+### 文件夹操作
